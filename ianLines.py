@@ -8,7 +8,7 @@ def initMatrix(matrix, xSize, ySize):
         matrix.append(list())
         for j in range(xSize):
             matrix[i].append(0)
-            
+
 def weightMap(weight):
     # if weight > 0:
 #         return 0
@@ -16,7 +16,7 @@ def weightMap(weight):
     return int(round(255 * (1/(math.exp(float(weight)/2))), 0))            
 
 def getRandLine(xSize, ySize):
-    return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))          
+    return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))
 
 def randomizeLines(numLines, xSize, ySize):
     result = list();
@@ -137,7 +137,7 @@ def main():
 
     #finalLines = randomLines(500, 1, width, height)
 
-    finalLines = hillClimbing(250, 60, 1, height, width, im2)
+    finalLines = hillClimbing(60, 5, 1, height, width, im2)
 
     for line in finalLines:
         drawLine(line[0],line[1],width,height, line[2], draw)
@@ -175,7 +175,8 @@ def hillClimbing(numbers, timeLimit, mRange, height, width, im2):
         while(tries < 100 and time.time() - startTime < timeLimit):
             #pick a random line
             climbNum += 1
-            print(climbNum)
+            sys.stdout.write('\r' + str(climbNum))
+            sys.stdout.flush()
             location = random.randrange(0, length)
 
             #swap out the line with a new one
@@ -201,11 +202,10 @@ def hillClimbing(numbers, timeLimit, mRange, height, width, im2):
         #if the new solution is better that the old best solution, replace the old best
         if(currentScore < scoreLines(bestSolution, im2)):
             bestSolution = copy.deepcopy(lines)
-
     return bestSolution
 
 def scoreLines(lines, im2):
-    img1 = Image.new('LA', im2.size, (0, 0))
+    img1 = Image.new('LA', im2.size, (0,0))
     draw = ImageDraw.Draw(img1)
     for aLine in lines:
         drawLine(aLine[0], aLine[1], im2.size[0], im2.size[1], aLine[2], draw)
