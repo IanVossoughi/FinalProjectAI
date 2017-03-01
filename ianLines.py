@@ -167,5 +167,5 @@ def scoreLines(lines, im2):
         s += numpy.sum(numpy.abs(m1-m2))
     return s
 
-#main()
-gTemp()
+main()
+#gTemp()
