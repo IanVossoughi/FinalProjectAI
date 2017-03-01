@@ -10,12 +10,13 @@ def initMatrix(matrix, xSize, ySize):
             matrix[i].append(0)
             
 def getRandLine(xSize, ySize):
-    return (random.uniform(-mRange, mRange), randint(-bRange,bRange), randint(0,1))          
+    return (random.uniform(-mRange, mRange), randint(0,xSize), randint(0,ySize), randint(0,1))          
 
-def randomizeLines(matrix, numLines, xSize, ySize):
+def randomizeLines(numLines, xSize, ySize):
     result = list();
     for(i in range(numLines)):
         result[i] = getRandLine()
+    return result
 
 def setPixel(x, y, value): #x, y increasing right and up from bottom left corner
     pass
@@ -25,21 +26,26 @@ def getPixel(x, y, value): #x, y increasing right and up from bottom left corner
         
 def fastDrawLines(lines, matrix, xSize, ySize):
     for line in lines:
-        if(line[2] == 0):
+        if(line[3] == 0): #(m, x0, y0, inverted)
             #not inverted
-            for x in range(xSize):
-                yVal = round(line[0] * x + line[1], 0)
+            for x in range(xSize): # y = m(x-x0) + y0
+                yVal = round((x - line[1])*line[0] + line[2], 0)
                 if(yVal >= 0 and yVal < ySize):
-                    matrix[yVal][x]++;
+                    matrix[yVal][x] += 1
          else:
             #inverted
-            for y in range(ySzie):
-                xVal = round(line[0] * y + line[1], 0)
+            for y in range(ySzie): # x = m(y - y0) + x0
+                xVal = round((y - line[2])*line[0] + line[1], 0)
                 if(xVal >= 0 and xVal < xSize):
-                    matrix[y][xVal]++;
+                    matrix[y][xVal] += 1
 
 def fastDrawLine(slope, intercept, inverted, xSize, ySize):
     pass
+    
+def gTemp():
+    matrix = list()
+    initMatrix(matrix, 128, 128)
+    lines = randomizeLines(100, 128, 128)
 
 #funcitons above this point are functions for the fast implemenation im working on -Gianluca
 
