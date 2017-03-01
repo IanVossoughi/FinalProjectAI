@@ -16,18 +16,27 @@ def randomizeLines(matrix, numLines, xSize, ySize):
     result = list();
     for(i in range(numLines)):
         result[i] = getRandLine()
+
+def setPixel(x, y, value): #x, y increasing right and up from bottom left corner
+    pass
+    
+def getPixel(x, y, value): #x, y increasing right and up from bottom left corner
+    pass
         
 def fastDrawLines(lines, matrix, xSize, ySize):
     for line in lines:
-        if(line[2] == 0) {
+        if(line[2] == 0):
             #not inverted
             for x in range(xSize):
-                pass
-        } else {
+                yVal = round(line[0] * x + line[1], 0)
+                if(yVal >= 0 and yVal < ySize):
+                    matrix[yVal][x]++;
+         else:
             #inverted
             for y in range(ySzie):
-                pass
-        }
+                xVal = round(line[0] * y + line[1], 0)
+                if(xVal >= 0 and xVal < xSize):
+                    matrix[y][xVal]++;
 
 def fastDrawLine(slope, intercept, inverted, xSize, ySize):
     pass
