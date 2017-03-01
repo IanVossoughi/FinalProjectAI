@@ -3,11 +3,17 @@ import random, time, copy
 from random import randint, randrange, choice
 import sys, numpy
 
-def drawLine(slope, intercept, xSize, ySize, draw):
-    x1 = 0
-    x2 = xSize
-    y1 = ySize - intercept
-    y2 = ySize - (intercept + (slope * xSize))
+def drawLine(slope, intercept, xSize, ySize, inverted, draw):
+    if inverted == 0:
+        x1 = 0
+        x2 = xSize
+        y1 = ySize - intercept
+        y2 = ySize - (intercept + (slope * xSize))
+    else:
+        y1 = ySize
+        y2 = 0
+        x1 = xSize - intercept
+        x2 = xSize - (intercept + (slope * ySize))
     draw.line((x1,y1, x2,y2), fill='Black')
     return draw
 
@@ -19,22 +25,29 @@ def main():
 
     draw = ImageDraw.Draw(im)
 
-    finalLines = hillClimbing(500, 60, 1, height, im2)
+    #finalLines = randomLines(500, 1, width, height)
+
+    finalLines = hillClimbing(250, 60, 1, height, width, im2)
 
     for line in finalLines:
-        drawLine(line[0],line[1],width,height,draw)
+        drawLine(line[0],line[1],width,height, line[2], draw)
     print(scoreLines(finalLines, im))
     im.show()
 
-def randomLines(number, mRange, bRange):
+def randomLines(number, mRange, width, height):
     lineArray = []
     i = 0
     while i < number:
-        lineArray.append((random.uniform(-mRange, mRange),randint(-bRange,bRange)))
+        inverted = randint(0, 1)
+        if inverted == 0:
+            bRange = height
+        else:
+            bRange = width
+        lineArray.append((random.uniform(-mRange, mRange),randint(-bRange,bRange),inverted))
         i += 1
     return lineArray
 
-def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
+def hillClimbing(numbers, timeLimit, mRange, height, width, im2):
     #setup
     size = im2.size
     startTime = time.time()
@@ -44,7 +57,7 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
     while(time.time() - startTime < timeLimit):
         climbNum = 0
         #randomly create enough lines
-        lines = randomLines(numbers, mRange, bRange)
+        lines = randomLines(numbers, mRange, width, height)
         currentScore = scoreLines(lines, im2)
         if(bestSolution == None):
             bestSolution = copy.deepcopy(lines)
@@ -57,7 +70,13 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
 
             #swap out the line with a new one
             oldLine = lines[location]
-            lines[location] = (random.uniform(-mRange, mRange),randint(-bRange,bRange))
+
+            inverted = randint(0, 1)
+            if inverted == 0:
+                bRange = height
+            else:
+                bRange = width
+            lines[location] = (random.uniform(-mRange, mRange),randint(-bRange,bRange), inverted)
             score = scoreLines(lines, im2)
 
             #check that move is an improvement
@@ -79,7 +98,7 @@ def scoreLines(lines, im2):
     img1 = Image.new('LA', im2.size, (0, 0))
     draw = ImageDraw.Draw(img1)
     for aLine in lines:
-        drawLine(aLine[0], aLine[1], im2.size[1], im2.size[0], draw)
+        drawLine(aLine[0], aLine[1], im2.size[0], im2.size[1], aLine[2], draw)
 
     s = 0
     for band_index, band in enumerate(img1.getbands()):
