@@ -12,6 +12,7 @@ def drawLine(slope, intercept, xSize, ySize, draw):
     return draw
 
 def main():
+#Change image to desired test file
     im2 = Image.open("img/eye.jpg")
     width, height = im2.size
     im = Image.new('LA', (width, height), (255))
