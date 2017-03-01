@@ -44,56 +44,61 @@ def fastDrawLines(lines, matrix, xSize, ySize):
                 xVal = int(round((y - line[2])*line[0] + line[1], 0))
                 if(xVal >= 0 and xVal < xSize):
                     matrix[y][xVal] += 1
-                    
+
+def getError(img, matrix, x, y):
+    return abs(weightMap(matrix[y][x]) - getPixel(img, x, y))
+                
 def calcError(img, matrix, xSize, ySize):
     error = 0
     for y in range(ySize):
         for x in range(xSize):
-            error += abs(weightMap(matrix[y][x]) - getPixel(img, x, y))
+            error += getError(img, matrix, x, y)
     return error
 
 #adds a line and returns the change in total error that this action results in
-def addLine(line, xSize, ySize):
+def addLine(line, matrix, image, xSize, ySize):
     change = 0
     if(line[3] == 0): #(m, x0, y0, inverted)
         #not inverted
         for x in range(xSize): # y = m(x-x0) + y0
-            yVal = int(round((x - line[1])*line[0] + line[2], 0))
-            if(yVal >= 0 and yVal < ySize):
-                change += weightMap(matrix[yVal][x] + 1) - weightMap(matrix[yVal][x])
-                matrix[yVal][x] += 1
+            y = int(round((x - line[1])*line[0] + line[2], 0))
+            if(y >= 0 and y < ySize):
+                oldErr = getError(image, matrix, x, y)
+                matrix[y][x] += 1
+                change += getError(image, matrix, x, y) - oldErr
     else:
         #inverted
         for y in range(ySize): # x = m(y - y0) + x0
-            xVal = int(round((y - line[2])*line[0] + line[1], 0))
-            if(xVal >= 0 and xVal < xSize):
-                change += weightMap(matrix[y][xVal] + 1) - weightMap(matrix[y][xVal])
-                matrix[y][xVal] += 1
+            x = int(round((y - line[2])*line[0] + line[1], 0))
+            if(x >= 0 and x < xSize):
+                oldErr = getError(image, matrix, x, y)
+                matrix[y][x] += 1
+                change += getError(image, matrix, x, y) - oldErr
     return change
 
 #adds a line and returns the change in total error that this action will results in
-def removeLine(line, xSize, ySize):
+def removeLine(line, matrix, image, xSize, ySize):
     change = 0
     if(line[3] == 0): #(m, x0, y0, inverted)
         #not inverted
         for x in range(xSize): # y = m(x-x0) + y0
-            yVal = int(round((x - line[1])*line[0] + line[2], 0))
-            if(yVal >= 0 and yVal < ySize):
-                newWeight = max(matrix[yVal][x] - 1, 0)
-                change += weightMap(newWeight) - weightMap(matrix[yVal][x]);
-                matrix[yVal][x] = newWeight
+            y = int(round((x - line[1])*line[0] + line[2], 0))
+            if(y >= 0 and y < ySize):
+                oldErr = getError(image, matrix, x, y)
+                matrix[y][x] = max(matrix[y][x] - 1, 0)
+                change += getError(image, matrix, x, y) - oldErr
     else:
         #inverted
         for y in range(ySize): # x = m(y - y0) + x0
-            xVal = int(round((y - line[2])*line[0] + line[1], 0))
-            if(xVal >= 0 and xVal < xSize):
-                newWeight = max(matrix[y][xVal] - 1, 0)
-                change += weightMap(newWeight) - weightMap(matrix[y][xVal])
-                matrix[y][xVal] = newWeight
+            x = int(round((y - line[2])*line[0] + line[1], 0))
+            if(x >= 0 and x < xSize):
+                oldErr = getError(image, matrix, x, y)
+                matrix[y][x] = max(matrix[y][x] - 1, 0)
+                change += getError(image, matrix, x, y) - oldErr
     return change
     
 def drawMatrix(matrix, xSize, ySize):
-    image = Image.new('L', (128, 128), (255))
+    image = Image.new('L', (xSize, ySize))
     for y in range(ySize):
         for x in range(xSize):
             setPixel(image, x, y, matrix[y][x])
@@ -106,11 +111,10 @@ def gTemp():
     img.draft('L', img.size)
     
     initMatrix(matrix, xSize, ySize)
-    lines = randomizeLines(500, xSize, ySize)
+    lines = randomizeLines(100, xSize, ySize)
     fastDrawLines(lines, matrix, xSize, ySize)
-    print(calcError(img, matrix, xSize, ySize))
+    error = calcError(img, matrix, xSize, ySize)
     drawMatrix(matrix, xSize, ySize)
-    
 
 #funcitons above this point are functions for the fast implemenation im working on -Gianluca
 def drawLine(slope, intercept, xSize, ySize, inverted, draw):
@@ -217,5 +221,5 @@ def scoreLines(lines, im2):
         s += numpy.sum(numpy.abs(m1-m2))
     return s
 
-#main()
-gTemp()
+main()
+#gTemp()
