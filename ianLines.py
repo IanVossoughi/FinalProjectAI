@@ -3,6 +3,37 @@ import random, time, copy
 from random import randint, randrange, choice
 import sys, numpy
 
+def initMatrix(matrix, xSize, ySize):
+    for i in range(ySize):
+        matrix.append(list())
+        for j in range(xSize):
+            matrix[i].append(0)
+            
+def getRandLine(xSize, ySize):
+    return (random.uniform(-mRange, mRange), randint(-bRange,bRange), randint(0,1))          
+
+def randomizeLines(matrix, numLines, xSize, ySize):
+    result = list();
+    for(i in range(numLines)):
+        result[i] = getRandLine()
+        
+def fastDrawLines(lines, matrix, xSize, ySize):
+    for line in lines:
+        if(line[2] == 0) {
+            #not inverted
+            for x in range(xSize):
+                pass
+        } else {
+            #inverted
+            for y in range(ySzie):
+                pass
+        }
+
+def fastDrawLine(slope, intercept, inverted, xSize, ySize):
+    pass
+
+#funcitons above this point are functions for the fast implemenation im working on -Gianluca
+
 def drawLine(slope, intercept, xSize, ySize, draw):
     x1 = 0
     x2 = xSize
@@ -19,7 +50,7 @@ def main():
 
     draw = ImageDraw.Draw(im)
 
-    finalLines = hillClimbing(500, 60, 1, height, im2)
+    finalLines = hillClimbing(150, 1, 1, height, im2)
 
     for line in finalLines:
         drawLine(line[0],line[1],width,height,draw)
