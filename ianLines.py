@@ -18,8 +18,7 @@ def main():
 
     draw = ImageDraw.Draw(im)
 
-    finalLines = hillClimbing(300, 10, 1, height, im2)
-    print(randrange(0,1))
+    finalLines = hillClimbing(500, 60, 1, height, im2)
 
     for line in finalLines:
         drawLine(line[0],line[1],width,height,draw)
@@ -51,6 +50,8 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
         tries = 0
         while(tries < 100 and time.time() - startTime < timeLimit):
             #pick a random line
+            climbNum += 1
+            print(climbNum)
             location = random.randrange(0, length)
 
             #swap out the line with a new one
