@@ -3,11 +3,77 @@ import random, time, copy
 from random import randint, randrange, choice
 import sys, numpy
 
-def drawLine(slope, intercept, xSize, ySize, draw):
-    x1 = 0
-    x2 = xSize
-    y1 = ySize - intercept
-    y2 = ySize - (intercept + (slope * xSize))
+def initMatrix(matrix, xSize, ySize):
+    for i in range(ySize):
+        matrix.append(list())
+        for j in range(xSize):
+            matrix[i].append(0)
+
+def weightMap(weight):
+    if weight > 0:
+        return 0
+    return 255
+
+def getRandLine(xSize, ySize):
+    return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))
+
+def randomizeLines(numLines, xSize, ySize):
+    result = list();
+    for i in range(numLines):
+        result.append(getRandLine(xSize, ySize))
+    return result
+
+def getPixel(x, y, value, draw):
+    pass
+
+def setPixel(x, y, value, draw):
+    draw.point((x, y), weightMap(value))
+
+def fastDrawLines(lines, matrix, xSize, ySize):
+    for line in lines:
+        if(line[3] == 0): #(m, x0, y0, inverted)
+            #not inverted
+            for x in range(xSize): # y = m(x-x0) + y0
+                yVal = int(round((x - line[1])*line[0] + line[2], 0))
+                if(yVal >= 0 and yVal < ySize):
+                    matrix[yVal][x] += 1
+        else:
+            #inverted
+            for y in range(ySize): # x = m(y - y0) + x0
+                xVal = int(round((y - line[2])*line[0] + line[1], 0))
+                if(xVal >= 0 and xVal < xSize):
+                    matrix[y][xVal] += 1
+
+def fastDrawLine(slope, intercept, inverted, xSize, ySize):
+    pass
+
+def drawMatrix(matrix, xSize, ySize):
+    image = Image.new('LA', (128, 128), (255))
+    draw = ImageDraw.Draw(image)
+    for y in range(ySize):
+        for x in range(xSize):
+            setPixel(x, y, matrix[y][x], draw)
+    image.show()
+
+def gTemp():
+    matrix = list()
+    initMatrix(matrix, 128, 128)
+    lines = randomizeLines(100, 128, 128)
+    fastDrawLines(lines, matrix, 128, 128)
+    drawMatrix(matrix, 128, 128)
+
+#funcitons above this point are functions for the fast implemenation im working on -Gianluca
+def drawLine(slope, intercept, xSize, ySize, inverted, draw):
+    if inverted == 0:
+        x1 = 0
+        x2 = xSize
+        y1 = ySize - intercept
+        y2 = ySize - (intercept + (slope * xSize))
+    else:
+        y1 = ySize
+        y2 = 0
+        x1 = xSize - intercept
+        x2 = xSize - (intercept + (slope * ySize))
     draw.line((x1,y1, x2,y2), fill='Black')
     return draw
 
@@ -19,22 +85,29 @@ def main():
 
     draw = ImageDraw.Draw(im)
 
-    finalLines = hillClimbing(500, 60, 1, height, im2)
+    #finalLines = randomLines(500, 1, width, height)
+
+    finalLines = hillClimbing(60, 5, 1, height, width, im2)
 
     for line in finalLines:
-        drawLine(line[0],line[1],width,height,draw)
+        drawLine(line[0],line[1],width,height, line[2], draw)
     print(scoreLines(finalLines, im))
     im.show()
 
-def randomLines(number, mRange, bRange):
+def randomLines(number, mRange, width, height):
     lineArray = []
     i = 0
     while i < number:
-        lineArray.append((random.uniform(-mRange, mRange),randint(-bRange,bRange)))
+        inverted = randint(0, 1)
+        if inverted == 0:
+            bRange = height
+        else:
+            bRange = width
+        lineArray.append((random.uniform(-mRange, mRange),randint(-bRange,bRange),inverted))
         i += 1
     return lineArray
 
-def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
+def hillClimbing(numbers, timeLimit, mRange, height, width, im2):
     #setup
     size = im2.size
     startTime = time.time()
@@ -44,7 +117,7 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
     while(time.time() - startTime < timeLimit):
         climbNum = 0
         #randomly create enough lines
-        lines = randomLines(numbers, mRange, bRange)
+        lines = randomLines(numbers, mRange, width, height)
         currentScore = scoreLines(lines, im2)
         if(bestSolution == None):
             bestSolution = copy.deepcopy(lines)
@@ -52,12 +125,19 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
         while(tries < 100 and time.time() - startTime < timeLimit):
             #pick a random line
             climbNum += 1
-            print(climbNum)
+            sys.stdout.write('\r' + str(climbNum))
+            sys.stdout.flush()
             location = random.randrange(0, length)
 
             #swap out the line with a new one
             oldLine = lines[location]
-            lines[location] = (random.uniform(-mRange, mRange),randint(-bRange,bRange))
+
+            inverted = randint(0, 1)
+            if inverted == 0:
+                bRange = height
+            else:
+                bRange = width
+            lines[location] = (random.uniform(-mRange, mRange),randint(-bRange,bRange), inverted)
             score = scoreLines(lines, im2)
 
             #check that move is an improvement
@@ -72,14 +152,13 @@ def hillClimbing(numbers, timeLimit, mRange, bRange, im2):
         #if the new solution is better that the old best solution, replace the old best
         if(currentScore < scoreLines(bestSolution, im2)):
             bestSolution = copy.deepcopy(lines)
-
     return bestSolution
 
 def scoreLines(lines, im2):
-    img1 = Image.new('LA', im2.size, (0, 0))
+    img1 = Image.new('LA', im2.size, (0,0))
     draw = ImageDraw.Draw(img1)
     for aLine in lines:
-        drawLine(aLine[0], aLine[1], im2.size[1], im2.size[0], draw)
+        drawLine(aLine[0], aLine[1], im2.size[0], im2.size[1], aLine[2], draw)
 
     s = 0
     for band_index, band in enumerate(img1.getbands()):
@@ -89,3 +168,4 @@ def scoreLines(lines, im2):
     return s
 
 main()
+#gTemp()
