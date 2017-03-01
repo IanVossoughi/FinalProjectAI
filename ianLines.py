@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw
 import random, time, copy
 from random import randint, randrange, choice
-import sys, numpy
+import sys, numpy, math
 
 def initMatrix(matrix, xSize, ySize):
     for i in range(ySize):
@@ -10,9 +10,10 @@ def initMatrix(matrix, xSize, ySize):
             matrix[i].append(0)
             
 def weightMap(weight):
-    if weight > 0:
-        return 0
-    return 255            
+    # if weight > 0:
+#         return 0
+#     return 255
+    return int(round(255 * (1/(math.exp(float(weight)/2))), 0))            
 
 def getRandLine(xSize, ySize):
     return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))          
@@ -22,12 +23,12 @@ def randomizeLines(numLines, xSize, ySize):
     for i in range(numLines):
         result.append(getRandLine(xSize, ySize))
     return result
+    
+def getPixel(img, x, y):
+    return img.getpixel((x,y))
 
-def getPixel(x, y, value, draw):
-    pass
-
-def setPixel(x, y, value, draw):
-    draw.point((x, y), weightMap(value))
+def setPixel(img, x, y, value):
+    img.putpixel((x, y), weightMap(value))
         
 def fastDrawLines(lines, matrix, xSize, ySize):
     for line in lines:
@@ -43,24 +44,73 @@ def fastDrawLines(lines, matrix, xSize, ySize):
                 xVal = int(round((y - line[2])*line[0] + line[1], 0))
                 if(xVal >= 0 and xVal < xSize):
                     matrix[y][xVal] += 1
-
-def fastDrawLine(slope, intercept, inverted, xSize, ySize):
-    pass
-    
-def drawMatrix(matrix, xSize, ySize):
-    image = Image.new('LA', (128, 128), (255))
-    draw = ImageDraw.Draw(image)
+                    
+def calcError(img, matrix, xSize, ySize):
+    error = 0
     for y in range(ySize):
         for x in range(xSize):
-            setPixel(x, y, matrix[y][x], draw)
+            error += abs(weightMap(matrix[y][x]) - getPixel(img, x, y))
+    return error
+
+#adds a line and returns the change in total error that this action results in
+def addLine(line, xSize, ySize):
+    change = 0
+    if(line[3] == 0): #(m, x0, y0, inverted)
+        #not inverted
+        for x in range(xSize): # y = m(x-x0) + y0
+            yVal = int(round((x - line[1])*line[0] + line[2], 0))
+            if(yVal >= 0 and yVal < ySize):
+                change += weightMap(matrix[yVal][x] + 1) - weightMap(matrix[yVal][x])
+                matrix[yVal][x] += 1
+    else:
+        #inverted
+        for y in range(ySize): # x = m(y - y0) + x0
+            xVal = int(round((y - line[2])*line[0] + line[1], 0))
+            if(xVal >= 0 and xVal < xSize):
+                change += weightMap(matrix[y][xVal] + 1) - weightMap(matrix[y][xVal])
+                matrix[y][xVal] += 1
+    return change
+
+#adds a line and returns the change in total error that this action will results in
+def removeLine(line, xSize, ySize):
+    change = 0
+    if(line[3] == 0): #(m, x0, y0, inverted)
+        #not inverted
+        for x in range(xSize): # y = m(x-x0) + y0
+            yVal = int(round((x - line[1])*line[0] + line[2], 0))
+            if(yVal >= 0 and yVal < ySize):
+                newWeight = max(matrix[yVal][x] - 1, 0)
+                change += weightMap(newWeight) - weightMap(matrix[yVal][x]);
+                matrix[yVal][x] = newWeight
+    else:
+        #inverted
+        for y in range(ySize): # x = m(y - y0) + x0
+            xVal = int(round((y - line[2])*line[0] + line[1], 0))
+            if(xVal >= 0 and xVal < xSize):
+                newWeight = max(matrix[y][xVal] - 1, 0)
+                change += weightMap(newWeight) - weightMap(matrix[y][xVal])
+                matrix[y][xVal] = newWeight
+    return change
+    
+def drawMatrix(matrix, xSize, ySize):
+    image = Image.new('L', (128, 128), (255))
+    for y in range(ySize):
+        for x in range(xSize):
+            setPixel(image, x, y, matrix[y][x])
     image.show()
 
 def gTemp():
     matrix = list()
-    initMatrix(matrix, 128, 128)
-    lines = randomizeLines(100, 128, 128)
-    fastDrawLines(lines, matrix, 128, 128)
-    drawMatrix(matrix, 128, 128)
+    img = Image.open("img/eye.jpg")
+    xSize, ySize = img.size
+    img.draft('L', img.size)
+    
+    initMatrix(matrix, xSize, ySize)
+    lines = randomizeLines(500, xSize, ySize)
+    fastDrawLines(lines, matrix, xSize, ySize)
+    print(calcError(img, matrix, xSize, ySize))
+    drawMatrix(matrix, xSize, ySize)
+    
 
 #funcitons above this point are functions for the fast implemenation im working on -Gianluca
 def drawLine(slope, intercept, xSize, ySize, inverted, draw):
@@ -167,5 +217,5 @@ def scoreLines(lines, im2):
         s += numpy.sum(numpy.abs(m1-m2))
     return s
 
-main()
-#gTemp()
+#main()
+gTemp()
