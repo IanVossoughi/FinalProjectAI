@@ -33,11 +33,12 @@ def getPixel(img, x, y):
 def setPixel(img, x, y, value):
     img.putpixel((x, y), weightMap(value))
         
-def fastDrawSegs(segs, matrix, xSize, ySize):
+def fastDrawSegs(segs, matrix, xSize, ySize, segLen):
     for seg in segs: # ((x0,y0),(x1,y1))
         if(abs(seg[0][0] - seg[1][0]) >= abs(seg[0][1] - seg[1][1])):
             start = min(seg[0][0], seg[1][0])
             end = max(seg[0][0], seg[1][0])
+            end = min(end, start + segLen)
             for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
                 y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
                 if(y >= 0 and y < ySize):
@@ -45,6 +46,7 @@ def fastDrawSegs(segs, matrix, xSize, ySize):
         else:
             start = min(seg[0][1], seg[1][1])
             end = max(seg[0][1], seg[1][1])
+            end = min(end, start + segLen)
             for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
                 x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
                 if(x >= 0 and x < xSize):
@@ -61,11 +63,12 @@ def calcError(img, matrix, xSize, ySize):
     return error
 
 #adds a line and returns the change in total error that this action results in
-def addSeg(seg, matrix, image, xSize, ySize):
+def addSeg(seg, matrix, image, xSize, ySize, segLen):
     change = 0
     if(abs(seg[0][0] - seg[1][0]) >= abs(seg[0][1] - seg[1][1])):
         start = min(seg[0][0], seg[1][0])
         end = max(seg[0][0], seg[1][0])
+        end = min(end, start + segLen)
         for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
             y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
             if(y >= 0 and y < ySize):
@@ -75,6 +78,7 @@ def addSeg(seg, matrix, image, xSize, ySize):
     else:
         start = min(seg[0][1], seg[1][1])
         end = max(seg[0][1], seg[1][1])
+        end = min(end, start + segLen)
         for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
             x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
             if(x >= 0 and x < xSize):
@@ -84,11 +88,12 @@ def addSeg(seg, matrix, image, xSize, ySize):
     return change
 
 #adds a line and returns the change in total error that this action will results in
-def removeSeg(seg, matrix, image, xSize, ySize):
+def removeSeg(seg, matrix, image, xSize, ySize, segLen):
     change = 0
     if(abs(seg[0][0] - seg[1][0]) >= abs(seg[0][1] - seg[1][1])):
         start = min(seg[0][0], seg[1][0])
         end = max(seg[0][0], seg[1][0])
+        end = min(end, start + segLen)
         for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
             y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
             if(y >= 0 and y < ySize):
@@ -98,6 +103,7 @@ def removeSeg(seg, matrix, image, xSize, ySize):
     else:
         start = min(seg[0][1], seg[1][1])
         end = max(seg[0][1], seg[1][1])
+        end = min(end, start + segLen)
         for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
             x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
             if(x >= 0 and x < xSize):
@@ -106,7 +112,6 @@ def removeSeg(seg, matrix, image, xSize, ySize):
                 change += getError(image, matrix, x, y) - oldErr
     return change
 
-#---------------------YOU ARE HERE---------------------------    
 def drawMatrix(matrix, xSize, ySize):
     image = Image.new('L', (xSize, ySize))
     for y in range(ySize):
@@ -114,7 +119,7 @@ def drawMatrix(matrix, xSize, ySize):
             setPixel(image, x, y, matrix[y][x])
     image.show()
 
-def hillClimbing(path, numLines, timeLimit):
+def hillClimbing(path, numLines, timeLimit, segLen):
     #setup
     img = Image.open(path)
     xSize, ySize = img.size
@@ -129,7 +134,7 @@ def hillClimbing(path, numLines, timeLimit):
         #randomly draw lines
         initMatrix(matrix, xSize, ySize)
         lines = randomizeSegs(numLines, xSize, ySize)
-        fastDrawSegs(lines, matrix, xSize, ySize)
+        fastDrawSegs(lines, matrix, xSize, ySize, segLen)
         error = calcError(img, matrix, xSize, ySize)
         if(bestSolution == None):
             bestSolution = copy.deepcopy(matrix)
@@ -142,8 +147,8 @@ def hillClimbing(path, numLines, timeLimit):
             newLine = getRandSeg(xSize, ySize)
 
             #change the line and get new score
-            change = removeSeg(oldLine, matrix, img, xSize, ySize)
-            change += addSeg(newLine, matrix, img, xSize, ySize)
+            change = removeSeg(oldLine, matrix, img, xSize, ySize, segLen)
+            change += addSeg(newLine, matrix, img, xSize, ySize, segLen)
             #check that the move is an improvement
             if(change < 0):
                 #if it is, keep it
@@ -151,8 +156,8 @@ def hillClimbing(path, numLines, timeLimit):
                 error += change
             else:
                 #if not, switch the line back
-                removeSeg(newLine, matrix, img, xSize, ySize)
-                addSeg(oldLine, matrix, img, xSize, ySize)
+                removeSeg(newLine, matrix, img, xSize, ySize, segLen)
+                addSeg(oldLine, matrix, img, xSize, ySize, segLen)
             count += 1
             sys.stdout.write("\r" + str(count) + ": " + str(error))
             sys.stdout.flush()
@@ -166,9 +171,9 @@ def hillClimbing(path, numLines, timeLimit):
 
 def main():
     args = sys.argv
-    if(len(args) < 4):
-        print("Usage: python " + args[0] + " [image path] [num lines] [time]")
+    if(len(args) < 5):
+        print("Usage: python " + args[0] + " [image path] [num lines] [time] [segment length]")
         return
-    result = hillClimbing(args[1], int(args[2]), int(args[3]))
+    result = hillClimbing(args[1], int(args[2]), int(args[3]), int(args[4]))
     drawMatrix(result[0], result[1], result[2])
 main()
