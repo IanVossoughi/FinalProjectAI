@@ -27,7 +27,7 @@ def main():
 
     #finalLines = randomLines(500, 1, width, height)
 
-    finalLines = hillClimbing(60, 5, 1, height, width, im2)
+    finalLines = hillClimbing(150, 30, 1, height, width, im2)
 
     for line in finalLines:
         drawLine(line[0],line[1],width,height, line[2], draw)

@@ -40,7 +40,7 @@ def fastDrawSegs(segs, matrix, xSize, ySize, segLen):
             end = max(seg[0][0], seg[1][0])
             end = min(end, start + segLen)
             for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
-                y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
+                y = int(round((float((seg[1][1]-seg[0][1]))/(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
                 if(y >= 0 and y < ySize):
                     matrix[y][x] += 1
         else:
@@ -48,7 +48,7 @@ def fastDrawSegs(segs, matrix, xSize, ySize, segLen):
             end = max(seg[0][1], seg[1][1])
             end = min(end, start + segLen)
             for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
-                x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
+                x = int(round((float((seg[1][0]-seg[0][0]))/(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
                 if(x >= 0 and x < xSize):
                     matrix[y][x] += 1
 
@@ -70,7 +70,7 @@ def addSeg(seg, matrix, image, xSize, ySize, segLen):
         end = max(seg[0][0], seg[1][0])
         end = min(end, start + segLen)
         for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
-            y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
+            y = int(round((float((seg[1][1]-seg[0][1]))/(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
             if(y >= 0 and y < ySize):
                 oldErr = getError(image, matrix, x, y)
                 matrix[y][x] += 1
@@ -80,7 +80,7 @@ def addSeg(seg, matrix, image, xSize, ySize, segLen):
         end = max(seg[0][1], seg[1][1])
         end = min(end, start + segLen)
         for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
-            x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
+            x = int(round((float((seg[1][0]-seg[0][0]))/(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
             if(x >= 0 and x < xSize):
                 oldErr = getError(image, matrix, x, y)
                 matrix[y][x] += 1
@@ -95,7 +95,7 @@ def removeSeg(seg, matrix, image, xSize, ySize, segLen):
         end = max(seg[0][0], seg[1][0])
         end = min(end, start + segLen)
         for x in range(start, end + 1): # y = ((y1-y0)/(x1-x0))(x - x0) + y0
-            y = int(round((float(abs(seg[1][1]-seg[0][1]))/abs(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
+            y = int(round((float((seg[1][1]-seg[0][1]))/(seg[1][0]-seg[0][0]))*(x-seg[0][0])+seg[0][1], 0))
             if(y >= 0 and y < ySize):
                 oldErr = getError(image, matrix, x, y)
                 matrix[y][x] = max(matrix[y][x] - 1, 0)
@@ -105,7 +105,7 @@ def removeSeg(seg, matrix, image, xSize, ySize, segLen):
         end = max(seg[0][1], seg[1][1])
         end = min(end, start + segLen)
         for y in range(start, end + 1): # x = ((x1-x0)/(y1-y0))(y - y0) + x0
-            x = int(round((float(abs(seg[1][0]-seg[0][0]))/abs(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
+            x = int(round((float((seg[1][0]-seg[0][0]))/(seg[1][1]-seg[0][1]))*(y-seg[0][1])+seg[0][0], 0))
             if(x >= 0 and x < xSize):
                 oldErr = getError(image, matrix, x, y)
                 matrix[y][x] = max(matrix[y][x] - 1, 0)
