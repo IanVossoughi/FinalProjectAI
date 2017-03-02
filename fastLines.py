@@ -15,7 +15,7 @@ def weightMap(weight):
     return int(round(255/(math.exp(float(weight)/2)), 0))            
 
 def getRandLine(xSize, ySize):
-    return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))
+    return (random.uniform(-1, 1), randrange(0,xSize), randrange(0,ySize), randint(0,1))
 
 def randomizeLines(numLines, xSize, ySize):
     result = list();
