@@ -3,66 +3,6 @@ import random, time, copy
 from random import randint, randrange, choice
 import sys, numpy
 
-def initMatrix(matrix, xSize, ySize):
-    for i in range(ySize):
-        matrix.append(list())
-        for j in range(xSize):
-            matrix[i].append(0)
-
-def weightMap(weight):
-    if weight > 0:
-        return 0
-    return 255
-
-def getRandLine(xSize, ySize):
-    return (random.uniform(-1, 1), randint(0,xSize), randint(0,ySize), randint(0,1))
-
-def randomizeLines(numLines, xSize, ySize):
-    result = list();
-    for i in range(numLines):
-        result.append(getRandLine(xSize, ySize))
-    return result
-
-def getPixel(x, y, value, draw):
-    pass
-
-def setPixel(x, y, value, draw):
-    draw.point((x, y), weightMap(value))
-
-def fastDrawLines(lines, matrix, xSize, ySize):
-    for line in lines:
-        if(line[3] == 0): #(m, x0, y0, inverted)
-            #not inverted
-            for x in range(xSize): # y = m(x-x0) + y0
-                yVal = int(round((x - line[1])*line[0] + line[2], 0))
-                if(yVal >= 0 and yVal < ySize):
-                    matrix[yVal][x] += 1
-        else:
-            #inverted
-            for y in range(ySize): # x = m(y - y0) + x0
-                xVal = int(round((y - line[2])*line[0] + line[1], 0))
-                if(xVal >= 0 and xVal < xSize):
-                    matrix[y][xVal] += 1
-
-def fastDrawLine(slope, intercept, inverted, xSize, ySize):
-    pass
-
-def drawMatrix(matrix, xSize, ySize):
-    image = Image.new('LA', (128, 128), (255))
-    draw = ImageDraw.Draw(image)
-    for y in range(ySize):
-        for x in range(xSize):
-            setPixel(x, y, matrix[y][x], draw)
-    image.show()
-
-def gTemp():
-    matrix = list()
-    initMatrix(matrix, 128, 128)
-    lines = randomizeLines(100, 128, 128)
-    fastDrawLines(lines, matrix, 128, 128)
-    drawMatrix(matrix, 128, 128)
-
-#funcitons above this point are functions for the fast implemenation im working on -Gianluca
 def drawLine(slope, intercept, xSize, ySize, inverted, draw):
     if inverted == 0:
         x1 = 0
@@ -168,4 +108,3 @@ def scoreLines(lines, im2):
     return s
 
 main()
-#gTemp()
