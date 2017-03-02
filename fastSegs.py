@@ -159,7 +159,7 @@ def hillClimbing(path, numLines, timeLimit, segLen):
                 removeSeg(newLine, matrix, img, xSize, ySize, segLen)
                 addSeg(oldLine, matrix, img, xSize, ySize, segLen)
             count += 1
-            sys.stdout.write("\r" + str(count) + ": " + str(error))
+            sys.stdout.write("\r" + str(count) + ": " + str(error)  + " -- " + "{0:.1f}".format(timeLimit- (time.time()-startTime)))
             sys.stdout.flush()
         #if the new solution is better that the old best solution, replace the old best
         if(error < bestScore):
