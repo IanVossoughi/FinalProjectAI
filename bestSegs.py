@@ -11,9 +11,6 @@ def initMatrix(matrix, xSize, ySize):
 
 
 def weightMap(weight):
-    # if weight > 0:
-    #         return 0
-    #     return 255
     return int(round(255 / (math.exp(float(weight) / 2)), 0))
 
 
@@ -41,7 +38,7 @@ def setPixel(img, x, y, value):
 
 
 def fastDrawSegs(segs, matrix, xSize, ySize, segLen, img):
-    for i in range(len(segs)):  # ((x0,y0),(x1,y1))
+    for i in range(len(segs)):
         segs[i] = addSeg(segs[i], matrix, img, xSize, ySize, segLen)
 
 
@@ -125,7 +122,7 @@ def addToLines(lines, seg):
     b = len(lines)
     while(a < b):
         pos = (a + b) / 2
-        if(seg[2] > lines[pos][2]):
+        if(segKey(seg) > segKey(lines[pos])):
             a = pos + 1;
         else:
             b = pos
@@ -144,6 +141,7 @@ def hillClimbing(path, numLines, timeLimit, segLen):
     fastDrawSegs(lines, matrix, xSize, ySize, segLen, img)
     lines.sort(key = segKey) #worst is at the end
     error = calcError(img, matrix, xSize, ySize)
+    
     tries = 0
     count = 0
     startTime = time.time()
