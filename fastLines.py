@@ -102,6 +102,7 @@ def drawMatrix(matrix, xSize, ySize):
         for x in range(xSize):
             setPixel(image, x, y, matrix[y][x])
     image.show()
+    return image
 
 def hillClimbing(path, numLines, timeLimit):
     #setup
@@ -110,53 +111,45 @@ def hillClimbing(path, numLines, timeLimit):
     img.draft('L', img.size)
     
     matrix = list()
+    #randomly draw lines
+    initMatrix(matrix, xSize, ySize)
+    lines = randomizeLines(numLines, xSize, ySize)
+    fastDrawLines(lines, matrix, xSize, ySize)
+    error = calcError(img, matrix, xSize, ySize)
+    count = 0
     startTime = time.time()
-    bestSolution = None
-    bestScore = None
-    #keep searching for solution while there is time last
     while(time.time() - startTime < timeLimit):
-        #randomly draw lines
-        initMatrix(matrix, xSize, ySize)
-        lines = randomizeLines(numLines, xSize, ySize)
-        fastDrawLines(lines, matrix, xSize, ySize)
-        error = calcError(img, matrix, xSize, ySize)
-        if(bestSolution == None):
-            bestSolution = copy.deepcopy(matrix)
-            bestScore = error
-        count = 0
-        while(time.time() - startTime < timeLimit):
-            #pick a random line and make it something else
-            index = random.randrange(numLines)
-            oldLine = lines[index]
-            newLine = getRandLine(xSize, ySize)
+        #pick a random line and make it something else
+        index = random.randrange(numLines)
+        oldLine = lines[index]
+        newLine = getRandLine(xSize, ySize)
 
-            #change the line and get new score
-            change = removeLine(oldLine, matrix, img, xSize, ySize)
-            change += addLine(newLine, matrix, img, xSize, ySize)
-            #check that the move is an improvement
-            if(change < 0):
-                #if it is, keep it
-                lines[index] = newLine
-                error += change
-            else:
-                #if not, switch the line back
-                removeLine(newLine, matrix, img, xSize, ySize)
-                addLine(oldLine, matrix, img, xSize, ySize)
-            count += 1
-            sys.stdout.write("\r" + str(count) + ": " + str(error)  + " -- " + "{0:.1f}".format(timeLimit- (time.time()-startTime)))
-            sys.stdout.flush()
-        #if the new solution is better that the old best solution, replace the old best
-        if(error < bestScore):
-            bestSolution = copy.deepcopy(matrix)
-            bestScore = error
+        #change the line and get new score
+        change = removeLine(oldLine, matrix, img, xSize, ySize)
+        change += addLine(newLine, matrix, img, xSize, ySize)
+        #check that the move is an improvement
+        if(change < 0):
+            #if it is, keep it
+            lines[index] = newLine
+            error += change
+        else:
+            #if not, switch the line back
+            removeLine(newLine, matrix, img, xSize, ySize)
+            addLine(oldLine, matrix, img, xSize, ySize)
+        count += 1
+        sys.stdout.write("\r" + str(count) + ": " + str(error)  + " -- " + "{0:.1f}".format(timeLimit- (time.time()-startTime)))
+        sys.stdout.flush()
     print("")
-    return (bestSolution, xSize, ySize)
+    return (matrix, xSize, ySize)
 
 def main():
     args = sys.argv
     if(len(args) < 4):
-        print("Usage: python " + args[0] + " [image path] [num lines] [time]")
+        print("Usage: python " + args[0] + " [image path] [num lines] [time] [optional output filename]")
         return
     result = hillClimbing(args[1], int(args[2]), int(args[3]))
-    drawMatrix(result[0], result[1], result[2])
+    image = drawMatrix(result[0], result[1], result[2])
+    if (len(args) > 4):
+        image.save("output/" + args[4])
+        
 main()

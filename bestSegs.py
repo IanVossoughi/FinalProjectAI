@@ -181,11 +181,11 @@ def hillClimbing(path, numLines, timeLimit, segLen):
 def main():
     args = sys.argv
     if (len(args) < 5):
-        print("Usage: python " + args[0] + " [image path] [num lines] [time] [segment length] [optional output filename")
+        print("Usage: python " + args[0] + " [image path] [num lines] [time] [segment length] [optional output filename]")
         return
     result = hillClimbing(args[1], int(args[2]), int(args[3]), int(args[4]))
     image = drawMatrix(result[0], result[1], result[2])
-    if (len(args) == 6):
+    if (len(args) > 5):
         image.save("output/" + args[5])
 
 

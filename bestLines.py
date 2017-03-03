@@ -88,6 +88,7 @@ def drawMatrix(matrix, xSize, ySize):
         for x in range(xSize):
             setPixel(image, x, y, matrix[y][x])
     image.show()
+    return image
 
 def lineKey(line):
     return line[4]
@@ -155,8 +156,11 @@ def hillClimbing(path, numLines, timeLimit):
 def main():
     args = sys.argv
     if(len(args) < 4):
-        print("Usage: python " + args[0] + " [image path] [num lines] [time]")
+        print("Usage: python " + args[0] + " [image path] [num lines] [time] [optional output filename]")
         return
     result = hillClimbing(args[1], int(args[2]), int(args[3]))
-    drawMatrix(result[0], result[1], result[2])
+    image = drawMatrix(result[0], result[1], result[2])
+    if (len(args) > 4):
+        image.save("output/" + args[4])
+        
 main()
